@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>my notes ✦</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #fdf6ee; --cream: #fef9f3; --border: #e8d9c5;
+  --text: #3a2e24; --text-soft: #9a8878;
+  --rose: #e8b4b8; --rose-light: #fdf0f1;
+  --sage: #a8c4a2; --sage-light: #f0f5ef;
+  --butter: #f2d97e; --butter-light: #fdf8e8;
+  --lavender: #c4b4d8; --lavender-light: #f5f0fb;
+  --sky: #a8c8e8; --sky-light: #f0f6fc;
+  --peach: #f0c4a0; --peach-light: #fdf4ec;
+}
+body { font-family: 'Nunito', sans-serif; background: var(--bg); background-image: radial-gradient(circle at 15% 20%, rgba(232,180,184,0.18) 0%, transparent 50%), radial-gradient(circle at 85% 75%, rgba(168,196,162,0.15) 0%, transparent 50%); min-height: 100vh; padding: 24px 16px 80px; color: var(--text); }
+body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: radial-gradient(circle, rgba(58,46,36,0.07) 1px, transparent 1px); background-size: 24px 24px; }
+.wrapper { max-width: 960px; margin: 0 auto; position: relative; z-index: 1; }
+
+/* NAV */
+.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.brand { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 26px; color: var(--text); }
+.brand span { color: var(--rose); }
+.nav-tabs { display: flex; gap: 6px; background: var(--cream); border: 1.5px solid var(--border); border-radius: 30px; padding: 5px; }
+.nav-tab { padding: 7px 18px; border-radius: 24px; font-size: 13px; font-weight: 700; border: none; background: transparent; color: var(--text-soft); cursor: pointer; transition: all 0.2s; font-family: 'Nunito', sans-serif; }
+.nav-tab.active { background: var(--text); color: #fff; box-shadow: 0 2px 8px rgba(58,46,36,0.2); }
+
+/* SYNC STATUS */
+.sync-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 12px; color: var(--text-soft); }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; transition: background 0.3s; }
+.sync-dot.ok { background: var(--sage); }
+.sync-dot.loading { background: var(--butter); animation: pulse 1s infinite; }
+.sync-dot.error { background: #e88; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; animation: fadeUp 0.25s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* NOTES */
+.notes-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+.color-bar { display: flex; gap: 6px; align-items: center; background: var(--cream); border: 1.5px solid var(--border); border-radius: 30px; padding: 6px 12px; }
+.color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; transition: transform 0.15s; border: 2px solid transparent; }
+.color-dot:hover { transform: scale(1.2); }
+.color-dot.selected { border-color: var(--text); transform: scale(1.1); }
+.btn-add { display: flex; align-items: center; gap: 6px; background: var(--text); color: #fff; border: none; border-radius: 30px; padding: 9px 18px; font-size: 13px; font-weight: 700; font-family: 'Nunito', sans-serif; cursor: pointer; transition: all 0.2s; box-shadow: 0 3px 12px rgba(58,46,36,0.2); }
+.btn-add:hover { transform: translateY(-1px); }
+.notes-grid { columns: 3 240px; column-gap: 14px; }
+.note-card { break-inside: avoid; border-radius: 16px; padding: 18px; margin-bottom: 14px; border: 1.5px solid rgba(0,0,0,0.07); position: relative; transition: box-shadow 0.2s, transform 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); animation: noteIn 0.3s cubic-bezier(.34,1.56,.64,1); }
+@keyframes noteIn { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.note-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
+.note-card.c-rose{background:var(--rose-light)} .note-card.c-sage{background:var(--sage-light)} .note-card.c-butter{background:var(--butter-light)} .note-card.c-lavender{background:var(--lavender-light)} .note-card.c-sky{background:var(--sky-light)} .note-card.c-peach{background:var(--peach-light)} .note-card.c-cream{background:var(--cream)}
+.note-stripe { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 14px 14px 0 0; }
+.c-rose .note-stripe{background:var(--rose)} .c-sage .note-stripe{background:var(--sage)} .c-butter .note-stripe{background:var(--butter)} .c-lavender .note-stripe{background:var(--lavender)} .c-sky .note-stripe{background:var(--sky)} .c-peach .note-stripe{background:var(--peach)} .c-cream .note-stripe{background:var(--border)}
+.note-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; margin-top: 4px; }
+.note-title { font-family: 'Instrument Serif', serif; font-size: 16px; color: var(--text); outline: none; border: none; background: transparent; width: 100%; cursor: text; line-height: 1.3; }
+.note-title:empty::before { content: attr(data-ph); color: var(--text-soft); font-style: italic; }
+.note-actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.2s; }
+.note-card:hover .note-actions { opacity: 1; }
+.icon-btn { width: 26px; height: 26px; border-radius: 8px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: background 0.15s; color: var(--text-soft); }
+.icon-btn:hover { background: rgba(58,46,36,0.1); }
+.icon-btn.del:hover { background: rgba(220,60,60,0.12); color: #c0392b; }
+.note-divider { height: 1px; background: rgba(58,46,36,0.1); margin: 8px 0 10px; }
+.note-body { font-size: 13.5px; line-height: 1.7; color: var(--text); outline: none; min-height: 60px; cursor: text; white-space: pre-wrap; word-break: break-word; }
+.note-body:empty::before { content: attr(data-ph); color: var(--text-soft); }
+.note-footer { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; }
+.note-date { font-size: 11px; color: var(--text-soft); }
+.note-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-soft); background: rgba(58,46,36,0.07); border-radius: 20px; padding: 2px 8px; outline: none; border: none; cursor: text; font-family: 'Nunito', sans-serif; max-width: 80px; }
+.note-tag:empty::before { content: 'tag'; color: var(--text-soft); opacity: 0.5; }
+.color-picker-popup { position: absolute; top: 36px; right: 0; background: var(--cream); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; display: flex; gap: 6px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 10; width: 130px; }
+.color-swatch { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s; }
+.color-swatch:hover { transform: scale(1.2); border-color: var(--text); }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-soft); }
+.empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 18px; }
+.empty-state small { font-size: 13px; margin-top: 6px; display: block; }
+
+/* CALENDAR */
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.cal-nav { display: flex; align-items: center; gap: 10px; }
+.cal-month-title { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 22px; color: var(--text); min-width: 180px; text-align: center; }
+.cal-nav-btn { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--cream); color: var(--text); cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.cal-nav-btn:hover { background: var(--text); color: #fff; border-color: var(--text); }
+.cal-legend { display: flex; gap: 16px; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-soft); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.cal-grid-wrap { background: var(--cream); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--text); }
+.cal-wd { padding: 10px 0; text-align: center; font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.7); letter-spacing: 0.08em; text-transform: uppercase; }
+.cal-wd:first-child { color: rgba(232,180,184,0.9); }
+.cal-wd:last-child { color: rgba(168,196,162,0.9); }
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-day { min-height: 90px; padding: 8px 6px 6px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); cursor: pointer; position: relative; transition: background 0.15s; display: flex; flex-direction: column; gap: 2px; }
+.cal-day:hover { background: rgba(232,180,184,0.12); }
+.cal-day:nth-child(7n) { border-right: none; }
+.cal-day.other-month { opacity: 0.35; pointer-events: none; }
+.cal-day.today { background: var(--rose-light); }
+.cal-day.today .day-num { background: var(--rose); color: var(--text); }
+.cal-day.sunday .day-num { color: #d64040; }
+.cal-day.saturday .day-num { color: #3a7a3a; }
+.day-num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--text); flex-shrink: 0; }
+.day-events { display: flex; flex-direction: column; gap: 2px; overflow: hidden; flex: 1; }
+.day-event-chip { font-size: 10px; line-height: 1.3; color: var(--text); border-radius: 4px; padding: 1px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.day-event-chip.c-rose{background:rgba(232,180,184,0.5)} .day-event-chip.c-sage{background:rgba(168,196,162,0.5)} .day-event-chip.c-butter{background:rgba(242,217,126,0.5)} .day-event-chip.c-lavender{background:rgba(196,180,216,0.5)} .day-event-chip.c-sky{background:rgba(168,200,232,0.5)} .day-event-chip.c-peach{background:rgba(240,196,160,0.5)} .day-event-chip.c-cream{background:rgba(232,217,197,0.5)}
+.day-more { font-size: 10px; color: var(--text-soft); font-weight: 700; padding-left: 4px; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(58,46,36,0.35); backdrop-filter: blur(3px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal { background: var(--cream); border-radius: 20px; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: slideUp 0.25s cubic-bezier(.34,1.4,.64,1); overflow: hidden; max-height: 90vh; display: flex; flex-direction: column; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.modal-header { background: var(--text); color: #fff; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.modal-title { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 17px; }
+.modal-close { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 28px; height: 28px; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: rgba(255,255,255,0.3); }
+.modal-list { overflow-y: auto; flex: 1; }
+.modal-list-header { padding: 14px 20px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.modal-list-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); }
+.btn-add-event { display: flex; align-items: center; gap: 5px; background: var(--text); color: #fff; border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.event-list-item { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s; }
+.event-list-item:hover { background: rgba(232,180,184,0.1); }
+.event-list-item:last-child { border-bottom: none; }
+.ev-color-bar { width: 4px; height: 36px; border-radius: 4px; flex-shrink: 0; }
+.ev-info { flex: 1; overflow: hidden; }
+.ev-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev-note-prev { font-size: 11px; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.ev-arrow { font-size: 12px; color: var(--text-soft); }
+.modal-empty { padding: 32px 20px; text-align: center; color: var(--text-soft); font-size: 13px; font-style: italic; }
+.modal-form { overflow-y: auto; flex: 1; padding: 20px; }
+.form-back { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; margin-bottom: 16px; padding: 0; }
+.form-back:hover { color: var(--text); }
+.modal-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-soft); margin-bottom: 6px; display: block; }
+.modal-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: 'Nunito', sans-serif; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; margin-bottom: 14px; }
+.modal-input:focus { border-color: var(--rose); }
+.modal-textarea { resize: vertical; min-height: 90px; }
+.modal-colors { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.modal-color-dot { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s; }
+.modal-color-dot:hover { transform: scale(1.15); }
+.modal-color-dot.selected { border-color: var(--text); }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; padding-top: 4px; }
+.btn-cancel { padding: 9px 18px; border-radius: 30px; border: 1.5px solid var(--border); background: transparent; color: var(--text-soft); font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.btn-save { padding: 9px 20px; border-radius: 30px; border: none; background: var(--text); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.btn-delete-ev { padding: 9px 16px; border-radius: 30px; border: none; background: rgba(220,60,60,0.1); color: #c0392b; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; margin-right: auto; }
+
+/* SETUP BANNER */
+.setup-banner { background: var(--butter-light); border: 1.5px solid var(--butter); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; line-height: 1.6; }
+.setup-banner strong { color: var(--text); }
+.setup-banner code { background: rgba(58,46,36,0.1); border-radius: 4px; padding: 1px 6px; font-size: 12px; font-family: monospace; }
+.setup-input-row { display: flex; gap: 8px; margin-top: 10px; }
+.setup-input { flex: 1; border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-family: 'Nunito', sans-serif; color: var(--text); background: var(--bg); outline: none; }
+.setup-input:focus { border-color: var(--butter); }
+.btn-setup { padding: 8px 16px; border-radius: 8px; border: none; background: var(--text); color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; white-space: nowrap; }
+
+@media (max-width: 500px) { .notes-grid { columns: 1; } .cal-day { min-height: 60px; } .brand { font-size: 20px; } }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="top-bar">
+    <div class="brand">my notes <span>✦</span></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchPage('notes',this)">📝 Notes</button>
+      <button class="nav-tab" onclick="switchPage('calendar',this)">🗓 Kalender</button>
+    </div>
+  </div>
+
+  <!-- SYNC STATUS -->
+  <div class="sync-bar">
+    <div class="sync-dot" id="syncDot"></div>
+    <span id="syncLabel">Belum terhubung ke Google Sheets</span>
+  </div>
+
+  <!-- SETUP BANNER -->
+  <div class="setup-banner" id="setupBanner">
+    ⚙️ <strong>Setup sekali aja!</strong> Paste URL Web App Google Apps Script kamu di sini supaya data tersimpan ke cloud dan bisa diakses dari semua device.<br>
+    <small style="color:var(--text-soft)">Belum punya? Ikuti panduan di bawah 👇</small>
+    <div class="setup-input-row">
+      <input class="setup-input" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/..." />
+      <button class="btn-setup" onclick="saveScriptUrl()">Simpan</button>
+    </div>
+  </div>
+
+  <!-- NOTES PAGE -->
+  <div class="page active" id="page-notes">
+    <div class="notes-toolbar">
+      <div class="color-bar" id="colorBar">
+        <div class="color-dot selected" data-color="c-rose"     style="background:#f2c4c8;"></div>
+        <div class="color-dot"          data-color="c-sage"     style="background:#a8c4a2;"></div>
+        <div class="color-dot"          data-color="c-butter"   style="background:#f2d97e;"></div>
+        <div class="color-dot"          data-color="c-lavender" style="background:#c4b4d8;"></div>
+        <div class="color-dot"          data-color="c-sky"      style="background:#a8c8e8;"></div>
+        <div class="color-dot"          data-color="c-peach"    style="background:#f0c4a0;"></div>
+        <div class="color-dot"          data-color="c-cream"    style="background:#e8d9c5;"></div>
+      </div>
+      <button class="btn-add" onclick="addNote()">＋ note baru</button>
+    </div>
+    <div class="notes-grid" id="notesGrid"></div>
+    <div class="empty-state" id="emptyState">
+      <div class="emoji">🌸</div>
+      <p>belum ada notes nih</p>
+      <small>klik "+ note baru" untuk mulai</small>
+    </div>
+  </div>
+
+  <!-- CALENDAR PAGE -->
+  <div class="page" id="page-calendar">
+    <div class="cal-header">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+        <div class="cal-month-title" id="calMonthTitle">—</div>
+        <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div> ada event</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--text-soft)"></div> ada catatan</div>
+      </div>
+    </div>
+    <div class="cal-grid-wrap">
+      <div class="cal-weekdays">
+        <div class="cal-wd">Min</div><div class="cal-wd">Sen</div><div class="cal-wd">Sel</div>
+        <div class="cal-wd">Rab</div><div class="cal-wd">Kam</div><div class="cal-wd">Jum</div><div class="cal-wd">Sab</div>
+      </div>
+      <div class="cal-days" id="calDays"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="handleOverlayClick(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">—</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="viewList" class="modal-list">
+      <div class="modal-list-header">
+        <span class="modal-list-label" id="listCountLabel">0 catatan</span>
+        <button class="btn-add-event" onclick="openForm(null)">＋ tambah</button>
+      </div>
+      <div id="eventListItems"></div>
+    </div>
+    <div id="viewForm" class="modal-form" style="display:none;">
+      <button class="form-back" onclick="showList()">← kembali</button>
+      <label class="modal-label">judul / event</label>
+      <input class="modal-input" id="modalEventName" placeholder="mis. Meeting, Deadline, Ulang tahun...">
+      <label class="modal-label">catatan</label>
+      <textarea class="modal-input modal-textarea" id="modalNote" placeholder="tulis apa saja..."></textarea>
+      <label class="modal-label">warna</label>
+      <div class="modal-colors" id="modalColors"></div>
+      <div class="modal-footer">
+        <button class="btn-delete-ev" id="btnDeleteEv" onclick="deleteEvent()" style="display:none;">🗑 hapus</button>
+        <button class="btn-cancel" onclick="showList()">batal</button>
+        <button class="btn-save" onclick="saveEvent()">simpan ✦</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ CONFIG ══
+const COLORS = ['c-rose','c-sage','c-butter','c-lavender','c-sky','c-peach','c-cream'];
+const COLOR_HEX = {'c-rose':'#f2c4c8','c-sage':'#a8c4a2','c-butter':'#f2d97e','c-lavender':'#c4b4d8','c-sky':'#a8c8e8','c-peach':'#f0c4a0','c-cream':'#e8d9c5'};
+const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtDate(ts){const d=new Date(ts);return d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});}
+function dateKey(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+
+// ══ SCRIPT URL (disimpan di localStorage) ══
+let SCRIPT_URL = localStorage.getItem('script-url') || '';
+
+function saveScriptUrl() {
+  const val = document.getElementById('scriptUrlInput').value.trim();
+  if(!val.startsWith('https://script.google.com')) {
+    alert('URL tidak valid. Pastikan copy dari Apps Script → Deploy → Web App URL'); return;
+  }
+  SCRIPT_URL = val;
+  localStorage.setItem('script-url', val);
+  document.getElementById('setupBanner').style.display = 'none';
+  initData();
+}
+
+function initSetupBanner() {
+  if(SCRIPT_URL) {
+    document.getElementById('setupBanner').style.display = 'none';
+  } else {
+    document.getElementById('scriptUrlInput').value = '';
+  }
+}
+
+// ══ SYNC STATUS ══
+function setSyncStatus(status, label) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot ' + status;
+  lbl.textContent = label;
+}
+
+// ══ API CALLS ══
+async function api(params) {
+  if(!SCRIPT_URL) return null;
+  try {
+    setSyncStatus('loading', 'Menyinkronkan...');
+    const url = SCRIPT_URL + '?' + new URLSearchParams(params);
+    const res = await fetch(url, { redirect: 'follow' });
+    const data = await res.json();
+    setSyncStatus('ok', 'Tersinkron ✦');
+    return data;
+  } catch(e) {
+    setSyncStatus('error', 'Gagal sinkron — cek koneksi');
+    return null;
+  }
+}
+
+async function apiPost(body) {
+  if(!SCRIPT_URL) return null;
+  try {
+    setSyncStatus('loading', 'Menyimpan...');
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      redirect: 'follow'
+    });
+    const data = await res.json();
+    setSyncStatus('ok', 'Tersimpan ✦');
+    return data;
+  } catch(e) {
+    setSyncStatus('error', 'Gagal menyimpan');
+    return null;
+  }
+}
+
+// ══ SHARED ══
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='calendar') renderCalendar();
+}
+
+// ══ NOTES ══
+let selectedColor = 'c-rose';
+let notes = [];
+let saveTimers = {};
+
+async function loadNotes() {
+  if(!SCRIPT_URL) {
+    notes = JSON.parse(localStorage.getItem('aes-notes')||'[]');
+    renderNotes(); return;
+  }
+  const res = await api({ action: 'getNotes' });
+  if(res && res.notes) {
+    notes = res.notes;
+    localStorage.setItem('aes-notes', JSON.stringify(notes));
+  } else {
+    notes = JSON.parse(localStorage.getItem('aes-notes')||'[]');
+  }
+  renderNotes();
+}
+
+document.querySelectorAll('.color-dot').forEach(dot=>{
+  dot.addEventListener('click',()=>{
+    document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
+    dot.classList.add('selected');
+    selectedColor=dot.dataset.color;
+  });
+});
+
+async function addNote() {
+  const note = { id: Date.now(), color: selectedColor, title: '', body: '', tag: '', ts: Date.now() };
+  notes.unshift(note);
+  renderNotes();
+  // simpan ke cloud
+  await apiPost({ action: 'saveNote', ...note });
+  setTimeout(()=>{const f=document.querySelector('.note-title');if(f)f.focus();},50);
+}
+
+async function deleteNote(id) {
+  notes = notes.filter(n=>n.id!==id);
+  localStorage.setItem('aes-notes', JSON.stringify(notes));
+  renderNotes();
+  await apiPost({ action: 'deleteNote', id });
+}
+
+function scheduleNoteSave(note) {
+  // debounce — simpan 1.5 detik setelah berhenti ketik
+  clearTimeout(saveTimers[note.id]);
+  saveTimers[note.id] = setTimeout(async () => {
+    localStorage.setItem('aes-notes', JSON.stringify(notes));
+    await apiPost({ action: 'saveNote', ...note });
+  }, 1500);
+}
+
+function changeNoteColor(id, color) {
+  const n = notes.find(x=>x.id===id);
+  if(n) { n.color=color; scheduleNoteSave(n); }
+}
+
+function renderNotes() {
+  const grid = document.getElementById('notesGrid');
+  const empty = document.getElementById('emptyState');
+  empty.style.display = notes.length===0 ? 'block' : 'none';
+  grid.innerHTML = '';
+  notes.forEach(note => {
+    const card = document.createElement('div');
+    card.className = `note-card ${note.color}`;
+    card.dataset.id = note.id;
+    card.innerHTML = `
+      <div class="note-stripe"></div>
+      <div class="note-topbar">
+        <div class="note-title" contenteditable="true" spellcheck="false" data-ph="judul note...">${esc(note.title)}</div>
+        <div class="note-actions">
+          <div style="position:relative;"><button class="icon-btn" onclick="toggleColorPicker(${note.id},this)">🎨</button></div>
+          <button class="icon-btn del" onclick="deleteNote(${note.id})">🗑</button>
+        </div>
+      </div>
+      <div class="note-divider"></div>
+      <div class="note-body" contenteditable="true" spellcheck="false" data-ph="tulis apa aja...">${esc(note.body)}</div>
+      <div class="note-footer">
+        <span class="note-date">${fmtDate(note.ts)}</span>
+        <div class="note-tag" contenteditable="true" spellcheck="false">${esc(note.tag)}</div>
+      </div>`;
+    card.querySelector('.note-title').addEventListener('input', e=>{
+      const n=notes.find(x=>x.id===note.id); if(n){n.title=e.target.innerText; scheduleNoteSave(n);}
+    });
+    card.querySelector('.note-body').addEventListener('input', e=>{
+      const n=notes.find(x=>x.id===note.id); if(n){n.body=e.target.innerText; scheduleNoteSave(n);}
+    });
+    card.querySelector('.note-tag').addEventListener('input', e=>{
+      const n=notes.find(x=>x.id===note.id); if(n){n.tag=e.target.innerText; scheduleNoteSave(n);}
+    });
+    grid.appendChild(card);
+  });
+}
+
+function toggleColorPicker(id, btn) {
+  document.querySelectorAll('.color-picker-popup').forEach(p=>p.remove());
+  const popup = document.createElement('div'); popup.className='color-picker-popup';
+  COLORS.forEach(c=>{
+    const sw=document.createElement('div'); sw.className='color-swatch'; sw.style.background=COLOR_HEX[c];
+    sw.onclick=()=>{changeNoteColor(id,c);const card=document.querySelector(`.note-card[data-id="${id}"]`);if(card){COLORS.forEach(x=>card.classList.remove(x));card.classList.add(c);}popup.remove();};
+    popup.appendChild(sw);
+  });
+  btn.parentElement.appendChild(popup);
+  setTimeout(()=>{document.addEventListener('click',function h(e){if(!popup.contains(e.target)&&e.target!==btn){popup.remove();document.removeEventListener('click',h);}});},10);
+}
+
+// ══ CALENDAR ══
+const _now = new Date();
+let calYear = _now.getFullYear();
+let calMonth = _now.getMonth();
+let events = {};
+let modalDateKey = null;
+let modalColor = 'c-rose';
+let editingIdx = null;
+
+async function loadEvents() {
+  if(!SCRIPT_URL) {
+    events = JSON.parse(localStorage.getItem('aes-events')||'{}');
+    renderCalendar(); return;
+  }
+  const res = await api({ action: 'getEvents' });
+  if(res && res.events) {
+    events = res.events;
+    localStorage.setItem('aes-events', JSON.stringify(events));
+  } else {
+    events = JSON.parse(localStorage.getItem('aes-events')||'{}');
+  }
+  renderCalendar();
+}
+
+function changeMonth(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+
+function renderCalendar(){
+  document.getElementById('calMonthTitle').textContent=BULAN_ID[calMonth]+' '+calYear;
+  const daysEl=document.getElementById('calDays'); daysEl.innerHTML='';
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const today=new Date();
+
+  for(let i=firstDay-1;i>=0;i--){const d=document.createElement('div');d.className='cal-day other-month';d.innerHTML=`<div class="day-num">${daysInPrev-i}</div>`;daysEl.appendChild(d);}
+
+  for(let day=1;day<=daysInMonth;day++){
+    const dow=new Date(calYear,calMonth,day).getDay();
+    const key=dateKey(calYear,calMonth,day);
+    const evList=events[key]||[];
+    const isToday=today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===day;
+    const d=document.createElement('div');
+    let cls='cal-day';
+    if(isToday)cls+=' today';
+    if(dow===0)cls+=' sunday';
+    if(dow===6)cls+=' saturday';
+    if(evList.some(e=>e.name&&e.name.trim()))cls+=' has-event';
+    else if(evList.some(e=>e.note&&e.note.trim()))cls+=' has-note';
+    d.className=cls;
+    const MAX=3;
+    const chips=evList.slice(0,MAX).map(e=>`<div class="day-event-chip ${e.color||'c-rose'}">${esc(e.name||'catatan')}</div>`).join('');
+    const more=evList.length>MAX?`<div class="day-more">+${evList.length-MAX} lagi</div>`:'';
+    d.innerHTML=`<div class="day-num">${day}</div><div class="day-events">${chips}${more}</div>`;
+    d.addEventListener('click',()=>openModal(key,day));
+    daysEl.appendChild(d);
+  }
+
+  const total=firstDay+daysInMonth;
+  const rem=total%7===0?0:7-(total%7);
+  for(let i=1;i<=rem;i++){const d=document.createElement('div');d.className='cal-day other-month';d.innerHTML=`<div class="day-num">${i}</div>`;daysEl.appendChild(d);}
+}
+
+// ══ MODAL ══
+function openModal(key, day) {
+  modalDateKey=key;
+  const parts=key.split('-'); const m=parseInt(parts[1])-1; const y=parseInt(parts[0]);
+  document.getElementById('modalTitle').textContent=`${day} ${BULAN_ID[m]} ${y}`;
+  showList();
+  document.getElementById('modalOverlay').style.display='flex';
+}
+
+function showList() {
+  editingIdx=null;
+  document.getElementById('viewList').style.display='block';
+  document.getElementById('viewForm').style.display='none';
+  const evList=events[modalDateKey]||[];
+  document.getElementById('listCountLabel').textContent=evList.length===0?'belum ada catatan':`${evList.length} catatan`;
+  const container=document.getElementById('eventListItems');
+  if(evList.length===0){container.innerHTML=`<div class="modal-empty">✦ Klik "+ tambah" untuk membuat catatan</div>`;return;}
+  container.innerHTML=evList.map((ev,i)=>`
+    <div class="event-list-item" onclick="openForm(${i})">
+      <div class="ev-color-bar" style="background:${COLOR_HEX[ev.color||'c-rose']}"></div>
+      <div class="ev-info">
+        <div class="ev-name">${esc(ev.name||'(tanpa judul)')}</div>
+        ${ev.note?`<div class="ev-note-prev">${esc(ev.note)}</div>`:''}
+      </div>
+      <div class="ev-arrow">›</div>
+    </div>`).join('');
+}
+
+function openForm(idx) {
+  editingIdx=idx;
+  document.getElementById('viewList').style.display='none';
+  document.getElementById('viewForm').style.display='block';
+  if(idx!==null&&events[modalDateKey]&&events[modalDateKey][idx]){
+    const ev=events[modalDateKey][idx];
+    document.getElementById('modalEventName').value=ev.name||'';
+    document.getElementById('modalNote').value=ev.note||'';
+    modalColor=ev.color||'c-rose';
+    document.getElementById('btnDeleteEv').style.display='block';
+  } else {
+    document.getElementById('modalEventName').value='';
+    document.getElementById('modalNote').value='';
+    modalColor='c-rose';
+    document.getElementById('btnDeleteEv').style.display='none';
+  }
+  renderFormColors();
+  setTimeout(()=>document.getElementById('modalEventName').focus(),80);
+}
+
+function renderFormColors(){
+  const wrap=document.getElementById('modalColors'); wrap.innerHTML='';
+  COLORS.forEach(c=>{
+    const dot=document.createElement('div');
+    dot.className='modal-color-dot'+(c===modalColor?' selected':'');
+    dot.style.background=COLOR_HEX[c];
+    dot.onclick=()=>{modalColor=c;wrap.querySelectorAll('.modal-color-dot').forEach(x=>x.classList.remove('selected'));dot.classList.add('selected');};
+    wrap.appendChild(dot);
+  });
+}
+
+async function saveEvent() {
+  const name=document.getElementById('modalEventName').value.trim();
+  const note=document.getElementById('modalNote').value.trim();
+  if(!name&&!note){showList();return;}
+  if(!events[modalDateKey])events[modalDateKey]=[];
+  const ev={name,note,color:modalColor};
+  if(editingIdx!==null){events[modalDateKey][editingIdx]=ev;}
+  else{events[modalDateKey].push(ev);}
+  localStorage.setItem('aes-events',JSON.stringify(events));
+  renderCalendar(); showList();
+  // simpan ke cloud
+  await apiPost({action:'saveEvent',key:modalDateKey,idx:editingIdx,...ev});
+}
+
+async function deleteEvent() {
+  if(editingIdx!==null&&events[modalDateKey]){
+    await apiPost({action:'deleteEvent',key:modalDateKey,idx:editingIdx});
+    events[modalDateKey].splice(editingIdx,1);
+    if(events[modalDateKey].length===0)delete events[modalDateKey];
+    localStorage.setItem('aes-events',JSON.stringify(events));
+    renderCalendar();
+  }
+  showList();
+}
+
+function closeModal(){document.getElementById('modalOverlay').style.display='none';}
+function handleOverlayClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+
+// ══ INIT ══
+async function initData() {
+  setSyncStatus('loading','Memuat data...');
+  await Promise.all([loadNotes(), loadEvents()]);
+}
+
+initSetupBanner();
+initData();
+</script>
+</body>
+</html>
